@@ -2,12 +2,19 @@
 https://docs.nginx.com/nginx-app-protect/admin-guide/install/#docker-deployment
 ## requires nginx repo keys
 
+## build
 ```bash
 . init.sh
 build_nginx registry.domain.com nginx-plus-ap latest nginx-plus-secret
 ```
-
-
+## test
+```bash
+docker run --name nginx-plus-ap -p 80:80 --rm -d registry.domain.com/nginx-plus-ap:latest
+# note curl where your docker daemon is running not the devcontainer
+curl localhost
+docker exec -it nginx-plus-ap nginx -T
+docker stop nginx-plus-ap
+```
 
 ## signatures
 default normal signature set

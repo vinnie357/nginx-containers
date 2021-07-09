@@ -28,4 +28,8 @@ RUN rm -rf /etc/ssl/nginx
 COPY nginx.conf /etc/nginx/
 COPY entrypoint.sh /root/
 
+RUN chmod +x /root/entrypoint.sh
+
+EXPOSE 80
+
 CMD /root/entrypoint.sh && tail -f /dev/null
