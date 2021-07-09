@@ -1,3 +1,29 @@
 fileignoreconfig:
 - filename: .devcontainer/scripts/docker-debian.sh
   checksum: 3109be3be53c3dad4a7cfcd0c07c87cd41ab26cc24e1fd4110fe69ecb955ae9a
+- filename: docker/nginx/20-envsubst-on-templates.sh
+  checksum: 06bc17e1b37aaac3a054b26f2b1ee300d9c2dc98c167daf92524e70d568ef51e
+- filename: docker/nginx/dockerfile
+  checksum: 1f2cd7f7513398313341ae10d48f25ce8cdbb240b638a2a90d8988474e8b205d
+- filename: docker/nginx-plus/Dockerfile
+  checksum: dd0aa1724706cef8bee18fd9c22b081ec114e83656bd3af73251bbf9805b8336
+- filename: docker/nginx-plus/readme.md
+  checksum: deeb5b4c4af4fe021d53c6abfe0065b8afed12daa969b8962da4743fa92e575f
+- filename: docker/nginx-plus-ap/nginx.conf
+  checksum: 368df018d26cfed63f1c96abf49e65120e7fd32ce57c4472a95b3a2d92385f03
+- filename: docker/nginx-plus-ap/readme.md
+  checksum: ad8988cf100468a341a53410f94a708685ff729fce48790dc97cc50be4d4cb5f
+- filename: docker/nginx-plus-ap-dos/Dockerfile
+  checksum: dc49bc0d55b5c38862ab784bde028db075cd75736f5afd2354851811cd024fdc
+- filename: docker/nginx-plus-ap-converter/Dockerfile
+  checksum: ab34daed0a1326713ef9aecc487e8f72d4812114087b73cbbfaa926a60033cbc
+- filename: docker/nginx-plus-ap-dos/nginx.conf
+  checksum: bed553edce40862d60018ebe3d183030b942440788e60f4942dcbdc9f5c5cf92
+- filename: scripts/build_nginx.sh
+  checksum: aa4b9d68ddc5a87bf34e6cb2546063f6aa841dd1a3bb22b09a397f6c49627d1d
+- filename: scripts/new_cert.sh
+  checksum: 54bb9207cecbb3969d5d9b65d0cc1707b609108bd50d6a3ef16c9e37c97786b8
+- filename: docker/nginx-plus-ap/Dockerfile
+  checksum: 0b368243a6186c2acc6c4348a4dcb8b5ebf48740685658a952ce2d052ca54ee4
+- filename: scripts/vault_secrets.sh
+  checksum: 748317d553395388acacfe0bbb0ae992d1343fc40203ebba428659c663a403a6
