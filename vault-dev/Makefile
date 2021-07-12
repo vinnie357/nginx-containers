@@ -5,8 +5,15 @@ export DIR = $(shell pwd)
 export WORK_DIR = $(shell dirname ${DIR})
 
 export CONTAINER_IMAGE = 'vault'
-export VAULT_PORT ='8200'
+export VAULT_PORT='8200'
 export TOKEN='root'
+export DOCKER_HOST = $(shell /sbin/ip -4 route show default | cut -d" " -f3 )
+# check for devcontainer
+ifeq ($(DOCKER_HOST),172.17.0.1)
+  SERVER += $(DOCKER_HOST)
+else
+  SERVER += 'localhost'
+endif
 
 vault:
 	@# docker run --cap-add=IPC_LOCK -d --name=dev-vault vault
@@ -37,4 +44,4 @@ test1:
 	@docker --version
 test2:
 	@# test vault
-	@curl -s --header "X-Vault-Token: ${VAULT_TOKEN}" --request GET    http://127.0.0.1:${VAULT_PORT}/v1/sys/health | jq .
+	@curl -s --header "X-Vault-Token: ${VAULT_TOKEN}" http://${SERVER}:${VAULT_PORT}/v1/sys/health | jq .

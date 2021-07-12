@@ -26,4 +26,4 @@ fileignoreconfig:
 - filename: docker/nginx-plus-ap/Dockerfile
   checksum: 0b368243a6186c2acc6c4348a4dcb8b5ebf48740685658a952ce2d052ca54ee4
 - filename: scripts/vault_secrets.sh
-  checksum: 748317d553395388acacfe0bbb0ae992d1343fc40203ebba428659c663a403a6
+  checksum: 94f492643adcbd40b298ea3765a3ab56decfc5482a8ae58494341343c444a807

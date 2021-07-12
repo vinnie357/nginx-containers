@@ -3,17 +3,26 @@ function vault_secrets {
 vaultHost=${1:-"http://localhost:8200"}
 vaultToken=${2:-"root"}
 secretName=${3:-"nginx"}
-
-export VAULT_ADDR=${vaultHost}
+#check for devcontainer docker assumes default docker network
+defaultDocker="127.17.0.1"
+route=$(ip route show default | awk '{ print $3}')
+ip route show default | fgrep -q 'default via 172.17.0.1'
+if [ $? -eq 0 ]; then
+   echo "matches docker address $route, $defaultDocker"
+   export VAULT_ADDR="http://${route}:8200"
+else
+   echo "doesn't match docker $route, $defaultDocker"
+   export VAULT_ADDR=${vaultHost}
+fi
 export VAULT_TOKEN=$(echo "${vaultToken}")
 #
-function kvVersion () {
+function kvVersion {
     curl -s \
     --header "X-Vault-Token: $VAULT_TOKEN" \
     --request GET \
-    $vaultHost/v1/sys/mounts | jq keys | grep 'secret/' > /dev/null 2>&1
+    $VAULT_ADDR/v1/sys/mounts | jq keys | grep 'secret/' > /dev/null 2>&1
     if [ $? == 0 ]; then
-        version=$(curl -s --header "X-Vault-Token: $VAULT_TOKEN" --request GET $vaultHost/v1/sys/mounts | jq -r '.["secret/"].options.version')
+        version=$(curl -s --header "X-Vault-Token: $VAULT_TOKEN" --request GET $VAULT_ADDR/v1/sys/mounts | jq -r '.["secret/"].options.version')
         echo $version
     else
         echo "type yes to enable the v2 secrets api"
@@ -22,7 +31,7 @@ function kvVersion () {
             curl --header "X-Vault-Token: $VAULT_TOKEN" \
             --request POST \
             --data '{ "type": "kv-v2" }' \
-            $vaultHost/v1/sys/mounts/secret
+            $VAULT_ADDR/v1/sys/mounts/secret
             echo "v2 enabled at /secret"
         else
             echo "please enable v2 to continue"
@@ -47,11 +56,11 @@ EOF
 kvApiVersion=$(kvVersion)
 echo "kv version: $kvApiVersion"
 if [ $kvApiVersion == "2" ]; then
-    curl  \
+    curl -s \
         --header "X-Vault-Token: $VAULT_TOKEN" \
         --request POST \
         --data "$nginx" \
-        $vaultHost/v1/secret/data/$secretName
+        $VAULT_ADDR/v1/secret/data/$secretName
 else
     echo "kv api version not v2"
     echo "quitting..."

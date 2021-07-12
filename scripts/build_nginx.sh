@@ -36,8 +36,18 @@ if [ "${secretName}" = "none" ] && [[ " ${needCerts[@]} " =~ " ${type} " ]]; the
   echo -n "Enter your secret name and press [ENTER]: "
   read secret
   # store screts
+  #check for devcontainer docker assumes default docker network
+  defaultDocker="127.17.0.1"
+  route=$(ip route show default | awk '{ print $3}')
+  ip route show default | fgrep -q 'default via 172.17.0.1'
+  if [ $? -eq 0 ]; then
+    echo "matches docker address $route, $defaultDocker"
+    export VAULT_ADDR="http://${route}:8200"
+  else
+    echo "doesn't match docker $route, $defaultDocker"
+    export VAULT_ADDR=${vaultHost}
+  fi
   vault_secrets $vaultHost $vaultToken $secret
-  VAULT_ADDR=${vaultHost:-"http://localhost:8200"}
   VAULT_TOKEN=${vaultToken:-"root"}
 else
   if [[ "${type}" == "nginx" ]]; then
@@ -52,7 +62,16 @@ else
     echo ""
     echo -n "default token is: root :"
     read -s vaultToken
-    VAULT_ADDR=${vaultHost:-"http://localhost:8200"}
+    #check for devcontainer docker assumes default docker network
+    if [[ "${vaultHost}" == "http://localhost:8200" ]]; then
+      echo "check for docker"
+      docker_host=$(/sbin/ip -4 route show default | cut -d" " -f3)
+      if [[ "${docker_host}" == "127.17.0.1" ]]; then
+        export VAULT_ADDR="http://${docker_host}:8200"
+      else
+        export VAULT_ADDR=${vaultHost}
+      fi
+    fi
     VAULT_TOKEN=${vaultToken:-"root"}
   fi
 fi
