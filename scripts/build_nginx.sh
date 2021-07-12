@@ -35,17 +35,22 @@ if [ "${secretName}" = "none" ] && [[ " ${needCerts[@]} " =~ " ${type} " ]]; the
   echo ""
   echo -n "Enter your secret name and press [ENTER]: "
   read secret
-  # store screts
+  # store secrets
   #check for devcontainer docker assumes default docker network
-  defaultDocker="127.17.0.1"
-  route=$(ip route show default | awk '{ print $3}')
-  ip route show default | fgrep -q 'default via 172.17.0.1'
-  if [ $? -eq 0 ]; then
-    echo "matches docker address $route, $defaultDocker"
-    export VAULT_ADDR="http://${route}:8200"
-  else
-    echo "doesn't match docker $route, $defaultDocker"
-    export VAULT_ADDR=${vaultHost}
+  if [[ "${vaultHost}" == "http://localhost:8200" ]]; then
+    defaultDocker="127.17.0.1"
+    route=$(ip route show default | awk '{ print $3}')
+    ip route show default | fgrep -q 'default via 172.17.0.1'
+    if [ $? -eq 0 ]; then
+      echo "matches docker address $route, $defaultDocker"
+      export VAULT_ADDR="http://${route}:8200"
+    else
+      echo "doesn't match docker $route, $defaultDocker"
+      export VAULT_ADDR=${vaultHost}
+    fi
+    else
+      # remote vault
+      export VAULT_ADDR=${vaultHost}
   fi
   vault_secrets $vaultHost $vaultToken $secret
   VAULT_TOKEN=${vaultToken:-"root"}
@@ -64,13 +69,19 @@ else
     read -s vaultToken
     #check for devcontainer docker assumes default docker network
     if [[ "${vaultHost}" == "http://localhost:8200" ]]; then
-      echo "check for docker"
-      docker_host=$(/sbin/ip -4 route show default | cut -d" " -f3)
-      if [[ "${docker_host}" == "127.17.0.1" ]]; then
-        export VAULT_ADDR="http://${docker_host}:8200"
+      defaultDocker="127.17.0.1"
+      route=$(ip route show default | awk '{ print $3}')
+      ip route show default | fgrep -q 'default via 172.17.0.1'
+      if [ $? -eq 0 ]; then
+        echo "matches docker address $route, $defaultDocker"
+        export VAULT_ADDR="http://${route}:8200"
       else
+        echo "doesn't match docker $route, $defaultDocker"
         export VAULT_ADDR=${vaultHost}
       fi
+      else
+        # remote vault
+        export VAULT_ADDR=${vaultHost}
     fi
     VAULT_TOKEN=${vaultToken:-"root"}
   fi

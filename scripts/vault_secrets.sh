@@ -4,15 +4,20 @@ vaultHost=${1:-"http://localhost:8200"}
 vaultToken=${2:-"root"}
 secretName=${3:-"nginx"}
 #check for devcontainer docker assumes default docker network
-defaultDocker="127.17.0.1"
-route=$(ip route show default | awk '{ print $3}')
-ip route show default | fgrep -q 'default via 172.17.0.1'
-if [ $? -eq 0 ]; then
-   echo "matches docker address $route, $defaultDocker"
-   export VAULT_ADDR="http://${route}:8200"
-else
-   echo "doesn't match docker $route, $defaultDocker"
-   export VAULT_ADDR=${vaultHost}
+if [[ "${vaultHost}" == "http://localhost:8200" ]]; then
+  defaultDocker="127.17.0.1"
+  route=$(ip route show default | awk '{ print $3}')
+  ip route show default | fgrep -q 'default via 172.17.0.1'
+  if [ $? -eq 0 ]; then
+    echo "matches docker address $route, $defaultDocker"
+    export VAULT_ADDR="http://${route}:8200"
+  else
+    echo "doesn't match docker $route, $defaultDocker"
+    export VAULT_ADDR=${vaultHost}
+  fi
+  else
+    # remote vault
+    export VAULT_ADDR=${vaultHost}
 fi
 export VAULT_TOKEN=$(echo "${vaultToken}")
 #
