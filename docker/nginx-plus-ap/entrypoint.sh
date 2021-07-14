@@ -9,6 +9,7 @@ set -m
 /usr/sbin/nginx -g 'daemon off;' &
 # start agent
 # wait for app protect to start then start agent
+# watch /var/log/access.log for 'APP_PROTECT { "event": "configuration_load_success"' then start agent
 /bin/sleep 15 && /usr/sbin/nginx-agent
 # now we bring the primary process back into the foreground
 # and leave it there
