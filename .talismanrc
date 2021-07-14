@@ -27,3 +27,9 @@ fileignoreconfig:
   checksum: 0b368243a6186c2acc6c4348a4dcb8b5ebf48740685658a952ce2d052ca54ee4
 - filename: scripts/vault_secrets.sh
   checksum: 94f492643adcbd40b298ea3765a3ab56decfc5482a8ae58494341343c444a807
+- filename: docker/nginx-plus-ap/nginx-agent.conf
+  checksum: 0406b532fee19ebbf52c90a681f5f1e6349496fe85bf2a5a7bbda63c7400bf4d
+- filename: docker/nginx-plus-ap-dos/nginx-agent.conf
+  checksum: 5953dae6aae86422128bfba8f76c37e78f3a6202868c5866ad56c663772dc798
+- filename: docker/nginx-plus/nginx-agent.conf
+  checksum: 5aa0832c7935538ae6f9d89d33abb24fa28f1ec4136b6899806c4526aa395ce7

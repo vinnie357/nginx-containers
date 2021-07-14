@@ -6,30 +6,44 @@ FROM ubuntu:focal
 COPY nginx-repo.crt nginx-repo.key /etc/ssl/nginx/
 
 # Install prerequisite packages:
-RUN apt-get update && apt-get install -y apt-transport-https lsb-release ca-certificates wget gnupg2
-
+RUN apt-get update
+RUN set -x \
+apt-get update && apt-get install -y \
+apt-transport-https \
+lsb-release \
+ca-certificates \
+wget \
+gnupg2 \
 # Download and add the NGINX signing key:
-RUN wget https://cs.nginx.com/static/keys/nginx_signing.key && apt-key add nginx_signing.key
-
+&& wget https://cs.nginx.com/static/keys/nginx_signing.key && apt-key add nginx_signing.key \
 # Add NGINX Plus and NGINX App Protect DoS repository:
-RUN printf "deb https://pkgs.nginx.com/plus/ubuntu `lsb_release -cs` nginx-plus\n" | tee /etc/apt/sources.list.d/nginx-plus.list
-RUN printf "deb https://pkgs.nginx.com/app-protect-dos/ubuntu `lsb_release -cs` nginx-plus\n" | tee /etc/apt/sources.list.d/nginx-app-protect-dos.list
-
+&& printf "deb https://pkgs.nginx.com/plus/ubuntu `lsb_release -cs` nginx-plus\n" | tee /etc/apt/sources.list.d/nginx-plus.list \
+&& printf "deb https://pkgs.nginx.com/app-protect-dos/ubuntu `lsb_release -cs` nginx-plus\n" | tee /etc/apt/sources.list.d/nginx-app-protect-dos.list \
+&& printf "deb https://pkgs.nginx.com/instance-manager/debian stable nginx-plus\n" | tee /etc/apt/sources.list.d/instance-manager.list \
 # Download the apt configuration to `/etc/apt/apt.conf.d`:
-RUN wget -P /etc/apt/apt.conf.d https://cs.nginx.com/static/files/90pkgs-nginx
-
+&& wget -P /etc/apt/apt.conf.d https://cs.nginx.com/static/files/90pkgs-nginx \
+&& wget -q -O /etc/apt/apt.conf.d/90pkgs-nginx https://cs.nginx.com/static/files/90pkgs-nginx \
 # Update the repository and install the most recent version of the NGINX App Protect DoS package (which includes NGINX Plus):
-RUN apt-get update && apt-get install -y app-protect-dos
-
+&& apt update && apt install -y app-protect-dos \
+## install nginx-agent
+&& apt clean \
+&& apt install -y nginx-agent \
 # Remove nginx repository key/cert from docker
-RUN rm -rf /etc/ssl/nginx
+&& rm -rf /etc/ssl/nginx
 
 # Copy configuration files:
 COPY nginx.conf /etc/nginx/
-COPY entrypoint.sh /root/
+COPY entrypoint.sh .
+# Agent config
+COPY nginx-agent.conf /etc/nginx-agent/nginx-agent.conf
+COPY stub-status.conf /etc/nginx/conf.d/
 
-RUN chmod +x /root/entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
 EXPOSE 80
 
-CMD /root/entrypoint.sh && tail -f /dev/null
+CMD ["/bin/sh","./entrypoint.sh"]
+
+#CMD /root/entrypoint.sh && tail -f /dev/null
+
+# vim:syntax=Dockerfile

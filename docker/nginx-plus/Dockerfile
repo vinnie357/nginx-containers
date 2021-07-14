@@ -1,4 +1,31 @@
-FROM alpine:3.13
+FROM ubuntu:focal as agent
+
+# packages
+RUN set -x \
+&& apt update \
+&& apt install -y \
+ jq \
+ apt-transport-https \
+ lsb-release \
+ ca-certificates \
+ wget \
+ gnupg \
+# folders
+&& mkdir /etc/ssl/nginx/
+
+COPY nginx-repo.crt /etc/ssl/nginx/nginx-repo.crt
+COPY nginx-repo.key /etc/ssl/nginx/nginx-repo.key
+
+RUN set -x \
+  && wget https://nginx.org/keys/nginx_signing.key \
+  && apt-key add nginx_signing.key \
+  && printf "deb https://pkgs.nginx.com/instance-manager/debian stable nginx-plus\n" | tee /etc/apt/sources.list.d/instance-manager.list \
+  && wget -q -O /etc/apt/apt.conf.d/90pkgs-nginx https://cs.nginx.com/static/files/90pkgs-nginx \
+  && apt update \
+  && apt install -y nginx-agent \
+  && rm -f /etc/ssl/nginx/nginx-repo.crt /etc/ssl/nginx/nginx-repo.key
+
+FROM alpine:3.13 as final
 
 LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
 
@@ -9,10 +36,17 @@ LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
 # ENV NJS_VERSION   0.6.1
 # ENV PKG_RELEASE   1
 
+# set an FQDN for NGINX instance manager
+# defaults are null
+ENV NIM_FQDN ''
+ENV NIM_TOKEN ''
+
 # Download certificate and key from the customer portal (https://account.f5.com)
 # and copy to the build context
 COPY nginx-repo.crt /etc/apk/cert.pem
 COPY nginx-repo.key /etc/apk/cert.key
+# copy agent binary from previous layer
+COPY --from=agent /usr/sbin/nginx-agent /usr/sbin/nginx-agent
 
 RUN set -x \
 # Create nginx user/group first, to be consistent throughout Docker variants
@@ -74,12 +108,25 @@ RUN set -x \
     && apk add --no-cache curl ca-certificates \
 # Forward request and error logs to Docker log collector
     && ln -sf /dev/stdout /var/log/nginx/access.log \
-    && ln -sf /dev/stderr /var/log/nginx/error.log
+    && ln -sf /dev/stderr /var/log/nginx/error.log \
+#We will need to add dbus for the machine-id generation.
+#https://docs.nginx.com/nginx-instance-manager/tutorials/containers/#single
+    && apk add dbus \
+    && dbus-uuidgen > /var/lib/dbus/machine-id \
+    && ln -sf /etc/machine-id /var/lib/dbus/machine-id \
+# agent folders
+    && mkdir /var/log/nginx-agent/ /etc/nginx-agent/
+# agent config
+COPY nginx-agent.conf /etc/nginx-agent/nginx-agent.conf
+COPY stub-status.conf /etc/nginx/conf.d/
 
 EXPOSE 80
 
 STOPSIGNAL SIGTERM
 
-CMD ["nginx", "-g", "daemon off;"]
+COPY entrypoint.sh .
+RUN chmod +x ./entrypoint.sh
+
+CMD ["/bin/sh","./entrypoint.sh"]
 
 # vim:syntax=Dockerfile

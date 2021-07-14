@@ -9,7 +9,7 @@ build_nginx registry.domain.com nginx-plus-ap latest nginx-plus-secret
 ```
 ## test
 ```bash
-docker run --name nginx-plus-ap -p 80:80 --rm -d registry.domain.com/nginx-plus-ap:latest
+docker run --hostname nginx-plus-ap-docker --name nginx-plus-ap -p 80:80 --rm -d registry.domain.com/nginx-plus-ap:latest
 # note curl where your docker daemon is running not the devcontainer
 curl localhost
 docker exec -it nginx-plus-ap nginx -T
