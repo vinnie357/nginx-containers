@@ -1,7 +1,7 @@
 function new_cert {
 #new_cert [fqdn]
 #new_cert nginx.demo.local
-CN=${1:"nginx.demo.local"}
+CN=${1:-"nginx.demo.local"}
 echo "==== certs ===="
 path="./certs"
 mkdir -p $path
