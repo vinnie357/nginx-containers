@@ -1,7 +1,8 @@
 function build_nginx {
 # build_nginx [registry] [type] [tag] [secret]
+# build_nginx "" nginx-plus-ap "" nginx-plus
 # default tag is latest
-registry=${1:-"registry.vin-lab.com"}
+registry=${1:-"dockerlocal"}
 type=${2:-"nginx-plus"}
 tag=${3:-"latest"}
 secretName=${4:-"none"}
@@ -10,7 +11,13 @@ function docker_build {
   #docker_build ${registry}/${type}:${tag}
   IMAGE=$1
   docker build -t $IMAGE .
-  docker push $IMAGE
+  if [[ "${registry}" == "dockerlocal" ]]; then
+    echo "local not pushing"
+  else
+    echo "pushing $IMAGE"
+    read -p "Press enter to continue"
+    docker push $IMAGE
+  fi
 }
 needCerts="nginx-plus nginx-plus-ap nginx-plus-ap-converter nginx-plus-ap-dos"
 # manage secrets
@@ -106,18 +113,24 @@ $(echo $secretData | jq -r .data.data.nginxKey | base64 -d)
 EOF
 
 fi
+# local builds
+if [[ "${registry}" == "dockerlocal" ]]; then
+  registryPath=""
+else
+  registryPath="${registry}/"
+fi
 if [[ "${type}" == "nginx" ]]; then
   echo "==== building $type:$tag ===="
   ## make nginx-oss
   cd docker/$type
-  docker_build ${registry}/${type}:${tag}
+  docker_build ${registryPath}${type}:${tag}
 fi
 
 if [[ "${type}" == "nginx-plus" ]]; then
   echo "==== building $type:$tag ===="
   ## make nginx-plus
   cd docker/$type
-  docker_build ${registry}/${type}:${tag}
+  docker_build ${registryPath}${type}:${tag}
   rm nginx-repo.crt nginx-repo.key
 fi
 
@@ -125,21 +138,21 @@ if [[ "${type}" == "nginx-plus-ap" ]]; then
   echo "==== building $type:$tag ===="
   ## make nginx-plus-ap
   cd docker/$type
-  docker_build ${registry}/${type}:${tag}
+  docker_build ${registryPath}${type}:${tag}
   rm nginx-repo.crt nginx-repo.key
 fi
 if [[ "${type}" == "nginx-plus-ap-converter" ]]; then
   echo "==== building $type:$tag ===="
   ## make nginx-plus-ap-converter
   cd docker/$type
-  docker_build ${registry}/${type}:${tag}
+  docker_build ${registryPath}${type}:${tag}
   rm nginx-repo.crt nginx-repo.key
 fi
 if [[ "${type}" == "nginx-plus-ap-dos" ]]; then
   echo "==== building $type:$tag ===="
   ## make nginx-plus-ap-dos
   cd docker/$type
-  docker_build ${registry}/${type}:${tag}
+  docker_build ${registryPath}${type}:${tag}
   rm nginx-repo.crt nginx-repo.key
 fi
 cd $dir

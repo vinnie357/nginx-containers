@@ -1,5 +1,6 @@
 FROM ubuntu:focal as agent
-
+#apt list -a nginx-manager
+ENV NIM_VERSION '1.0.1-336280068'
 # packages
 RUN set -x \
 && apt update \
@@ -22,7 +23,7 @@ RUN set -x \
   && printf "deb https://pkgs.nginx.com/instance-manager/debian stable nginx-plus\n" | tee /etc/apt/sources.list.d/instance-manager.list \
   && wget -q -O /etc/apt/apt.conf.d/90pkgs-nginx https://cs.nginx.com/static/files/90pkgs-nginx \
   && apt update \
-  && apt install -y nginx-agent \
+  && apt install -y nginx-agent=${NIM_VERSION} \
   && rm -f /etc/ssl/nginx/nginx-repo.crt /etc/ssl/nginx/nginx-repo.key
 
 FROM alpine:3.13 as final

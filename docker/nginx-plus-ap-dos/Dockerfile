@@ -1,6 +1,7 @@
 # For Ubuntu 20.04:
 FROM ubuntu:focal
-
+#apt list -a nginx-manager
+ENV NIM_VERSION '1.0.1-336280068'
 # Download certificate and key from the customer portal (https://my.f5.com)
 # and copy to the build context:
 COPY nginx-repo.crt nginx-repo.key /etc/ssl/nginx/
@@ -27,7 +28,7 @@ gnupg2 \
 && apt update && apt install -y app-protect-dos \
 ## install nginx-agent
 && apt clean \
-&& apt install -y nginx-agent \
+&& apt install -y nginx-agent=${NIM_VERSION} \
 # Remove nginx repository key/cert from docker
 && rm -rf /etc/ssl/nginx
 
